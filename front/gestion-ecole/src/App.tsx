@@ -22,11 +22,15 @@ import EquipmentList from './pages/equipment/EquipmentList';
 import EquipmentCreate from './pages/equipment/EquipmentCreate';
 import EquipmentDetail from './pages/equipment/EquipmentDetail';
 import EquipmentEdit from './pages/equipment/EquipmentEdit';
+import PurchaseList from './pages/purchases/PurchaseList';
+import PurchaseCreate from './pages/purchases/PurchaseCreate';
+import PurchaseDetail from './pages/purchases/PurchaseDetail';
+import PurchaseEdit from './pages/purchases/PurchaseEdit';
 
 // import MainLayout from './components/MainLayout';
 import Dashboard from './pages/Dashboard';
 // import DisciplineList from './pages/discipline/DisciplineList';
-// import DisciplineCreate from './pages/discipline/DisciplineCreate';
+// import DisciplineCreate from './pages/discipline/DisciplineCreate;
 // import DisciplineDetail from './pages/discipline/DisciplineDetail';
 // import DisciplineEdit from './pages/discipline/DisciplineEdit';
 
@@ -58,6 +62,10 @@ const App: React.FC = () => {
           <Route path="/dashboard/equipment/create" element={<EquipmentCreate />} />
           <Route path="/dashboard/equipment/:id" element={<EquipmentDetail />} />
           <Route path="/dashboard/equipment/edit/:id" element={<EquipmentEdit />} />
+          <Route path="/dashboard/purchases" element={<PurchaseList />} />
+          <Route path="/dashboard/purchases/create" element={<PurchaseCreate />} />
+          <Route path="/dashboard/purchases/:id" element={<PurchaseDetail />} />
+          <Route path="/dashboard/purchases/edit/:id" element={<PurchaseEdit />} />
         </Route>
         <Route >
            {/* element={<MainLayout />}> */}
