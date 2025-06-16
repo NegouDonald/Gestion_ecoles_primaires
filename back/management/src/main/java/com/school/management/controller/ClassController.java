@@ -1,6 +1,6 @@
-// controller/ClassController.java
 package com.school.management.controller;
 
+import com.school.management.dto.request.ClassCreateRequest;
 import com.school.management.entity.Class;
 import com.school.management.entity.Student;
 import com.school.management.entity.enums.Language;
@@ -25,7 +25,14 @@ public class ClassController {
     private final ClassService classService;
 
     @PostMapping
-    public ResponseEntity<Class> createClass(@Valid @RequestBody Class classEntity) {
+    public ResponseEntity<Class> createClass(@Valid @RequestBody ClassCreateRequest request) {
+        Class classEntity = new Class();
+        classEntity.setName(request.getName());
+        classEntity.setLevel(request.getLevel());
+        classEntity.setSection(request.getSection());
+        classEntity.setLanguage(request.getLanguage());
+        classEntity.setAcademicYear(request.getAcademicYear());
+        classEntity.setMaxCapacity(request.getMaxCapacity());
         Class response = classService.createClass(classEntity);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }

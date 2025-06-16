@@ -1,6 +1,7 @@
-// entity/Subject.java
 package com.school.management.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.school.management.entity.enums.Language;
 import com.school.management.entity.enums.Section;
 import jakarta.persistence.*;
@@ -40,23 +41,25 @@ public class Subject {
     private Integer credits = 1;
     private Integer coefficient = 1;
 
-    // Relation Many-to-One avec Teacher (un enseignant principal par matière)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id")
+    @JsonBackReference // Correspond à @JsonManagedReference dans Teacher.primarySubjects
     private Teacher teacher;
 
     @ManyToMany(mappedBy = "subjects")
+    @JsonIgnore // Évite la désérialisation de cette liste
     private List<Class> classes = new ArrayList<>();
 
-    // Relation Many-to-Many pour les enseignants supplémentaires
     @ManyToMany
     @JoinTable(
             name = "subject_teachers",
             joinColumns = @JoinColumn(name = "subject_id"),
             inverseJoinColumns = @JoinColumn(name = "teacher_id")
     )
+    @JsonIgnore // Évite la désérialisation de cette liste
     private List<Teacher> teachers = new ArrayList<>();
 
     @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore // Évite la désérialisation des grades
     private List<Grade> grades = new ArrayList<>();
 }
