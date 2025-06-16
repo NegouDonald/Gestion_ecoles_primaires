@@ -29,7 +29,7 @@ const TeacherCreate: React.FC = () => {
     try {
       await teacherService.createTeacher(formData);
       console.log('Enseignant créé, redirection vers: /teachers'); // Débogage
-      navigate('/teachers');
+      navigate('/dashboard/teachers');
     } catch (error: any) {
       setError(error.message || 'Erreur lors de la création de l\'enseignant.');
       console.error('Erreur:', error);
