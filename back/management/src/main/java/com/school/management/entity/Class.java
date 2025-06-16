@@ -1,4 +1,3 @@
-// entity/Class.java
 package com.school.management.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -44,11 +43,11 @@ public class Class {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id")
-    @JsonBackReference // Évite la sérialisation récursive vers Teacher
+    @JsonBackReference
     private Teacher teacher;
 
     @OneToMany(mappedBy = "studentClass", fetch = FetchType.LAZY)
-    @JsonIgnore // Exclut les étudiants de la sérialisation
+    @JsonIgnore
     private List<Student> students = new ArrayList<>();
 
     @ManyToMany
@@ -57,5 +56,6 @@ public class Class {
             joinColumns = @JoinColumn(name = "class_id"),
             inverseJoinColumns = @JoinColumn(name = "subject_id")
     )
+    @JsonIgnore
     private List<Subject> subjects = new ArrayList<>();
 }

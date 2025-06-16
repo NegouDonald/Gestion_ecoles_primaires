@@ -20,7 +20,7 @@ import ClassDetail from './pages/classes/ClassDetail';
 import ClassEdit from './pages/classes/ClassEdit';
 
 // import MainLayout from './components/MainLayout';
-// import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/Dashboard';
 // import DisciplineList from './pages/discipline/DisciplineList';
 // import DisciplineCreate from './pages/discipline/DisciplineCreate';
 // import DisciplineDetail from './pages/discipline/DisciplineDetail';
@@ -33,7 +33,7 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/Login" element={<Login />} />
         <Route element={<DashboardLayout />}>
-          {/* <Route path="/dashboard" element={<Dashboard />} /> */}
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/students" element={<StudentList />} />
           <Route path="/dashboard/students/class/:classId" element={<StudentList />} />
           <Route path="/dashboard/students/create" element={<StudentCreate />} />

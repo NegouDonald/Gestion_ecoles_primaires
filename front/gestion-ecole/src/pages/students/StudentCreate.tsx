@@ -1,4 +1,3 @@
-// src/pages/students/StudentCreate.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { studentService } from '../../services/student.service';
@@ -15,14 +14,15 @@ const StudentCreate: React.FC = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    email: '',
+    dateOfBirth: '',
     gender: '',
-    birthDate: '',
-    parentName: '',
-    parentEmail: '',
-    parentPhone: '',
-    registrationDate: '',
     section: '',
+    language: '',
+    academicYear: '',
+    parentName: '',
+    parentPhone: '',
+    parentEmail: '',
+    address: '',
     classId: '',
   });
   const [classes, setClasses] = useState<Class[]>([]);
@@ -40,24 +40,34 @@ const StudentCreate: React.FC = () => {
     fetchClasses();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: unknown }>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    if (name) {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const studentData = {
-        ...formData,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        dateOfBirth: formData.dateOfBirth,
+        gender: formData.gender,
+        section: formData.section,
+        language: formData.language,
+        academicYear: formData.academicYear,
+        parentName: formData.parentName,
+        parentPhone: formData.parentPhone,
+        parentEmail: formData.parentEmail,
+        address: formData.address,
         classId: formData.classId ? Number(formData.classId) : null,
       };
       await studentService.createStudent(studentData);
-      console.log('Étudiant créé, redirection vers: /dashboard/students');
       navigate('/dashboard/students');
     } catch (err: any) {
-      setError(err.message);
-      console.error('Erreur:', err);
+      setError(err.message || 'Erreur lors de la création de l\'étudiant');
     }
   };
 
@@ -92,35 +102,62 @@ const StudentCreate: React.FC = () => {
         />
         <TextField
           fullWidth
-          label="Email"
-          name="email"
-          type="email"
-          value={formData.email}
-          onChange={handleChange}
-          margin="normal"
-          required
-        />
-        <TextField
-          fullWidth
-          select
-          label="Genre"
-          name="gender"
-          value={formData.gender}
-          onChange={handleChange}
-          margin="normal"
-        >
-          <MenuItem value="MALE">Masculin</MenuItem>
-          <MenuItem value="FEMALE">Féminin</MenuItem>
-        </TextField>
-        <TextField
-          fullWidth
           label="Date de naissance"
-          name="birthDate"
+          name="dateOfBirth"
           type="date"
-          value={formData.birthDate}
+          value={formData.dateOfBirth}
           onChange={handleChange}
           margin="normal"
           InputLabelProps={{ shrink: true }}
+          required
+        />
+        <FormControl fullWidth margin="normal" required>
+          <InputLabel>Genre</InputLabel>
+          <Select
+            name="gender"
+            value={formData.gender}
+            onChange={handleChange}
+            label="Genre"
+          >
+            <MenuItem value="MALE">Masculin</MenuItem>
+            <MenuItem value="FEMALE">Féminin</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl fullWidth margin="normal" required>
+          <InputLabel>Section</InputLabel>
+          <Select
+            name="section"
+            value={formData.section}
+            onChange={handleChange}
+            label="Section"
+          >
+            <MenuItem value="CRECHE">Crèche</MenuItem>
+            <MenuItem value="MATERNELLE">Maternelle</MenuItem>
+            <MenuItem value="PRIMAIRE">Primaire</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl fullWidth margin="normal" required>
+          <InputLabel>Langue</InputLabel>
+          <Select
+            name="language"
+            value={formData.language}
+            onChange={handleChange}
+            label="Langue"
+          >
+            <MenuItem value="FRANCOPHONE">Francophone</MenuItem>
+            <MenuItem value="ANGLOPHONE">Anglophone</MenuItem>
+            {/* Ajoutez d'autres valeurs de l'enum Language si nécessaire */}
+          </Select>
+        </FormControl>
+        <TextField
+          fullWidth
+          label="Année académique"
+          name="academicYear"
+          value={formData.academicYear}
+          onChange={handleChange}
+          margin="normal"
+          required
+          placeholder="2024-2025"
         />
         <TextField
           fullWidth
@@ -129,6 +166,7 @@ const StudentCreate: React.FC = () => {
           value={formData.parentName}
           onChange={handleChange}
           margin="normal"
+          required
         />
         <TextField
           fullWidth
@@ -149,27 +187,12 @@ const StudentCreate: React.FC = () => {
         />
         <TextField
           fullWidth
-          label="Date d'inscription"
-          name="registrationDate"
-          type="date"
-          value={formData.registrationDate}
+          label="Adresse"
+          name="address"
+          value={formData.address}
           onChange={handleChange}
           margin="normal"
-          InputLabelProps={{ shrink: true }}
         />
-        <TextField
-          fullWidth
-          select
-          label="Section"
-          name="section"
-          value={formData.section}
-          onChange={handleChange}
-          margin="normal"
-        >
-          <MenuItem value="CRECHE">Crèche</MenuItem>
-          <MenuItem value="MATERNELLE">Maternelle</MenuItem>
-          <MenuItem value="PRIMAIRE">Primaire</MenuItem>
-        </TextField>
         <FormControl fullWidth margin="normal">
           <InputLabel>Classe</InputLabel>
           <Select

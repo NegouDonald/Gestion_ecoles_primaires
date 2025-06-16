@@ -28,7 +28,7 @@ const SubjectCreate: React.FC = () => {
     try {
       await subjectService.createSubject(formData);
       console.log('Matière créée, redirection vers: /subjects'); // Débogage
-      navigate('/subjects');
+      navigate('/dashboard/subjects');
     } catch (error: any) {
       setError(error.message || 'Erreur lors de la création de la matière.');
       console.error('Erreur:', error);
