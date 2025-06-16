@@ -1,13 +1,16 @@
-// equipment types 
-export type EquipmentCategory = 'Furniture' | 'Electronics' | 'Sports' | 'Books' | 'Other';
-
 export interface Equipment {
-    id: string;
-    name: string;
-    category: EquipmentCategory;
-    quantity: number;
-    condition: 'New' | 'Good' | 'Fair' | 'Poor';
-    location?: string;
-    purchaseDate?: Date;
-    description?: string;
+  id: number;
+  name: string;
+  description?: string;
+  serialNumber: string;
+  category?: string;
+  brand?: string;
+  model?: string;
+  purchasePrice?: number;
+  purchaseDate?: string;
+  warrantyExpiryDate?: string;
+  maintenanceDate?: string;
+  status: string;
+  location?: string;
+  assignedTo?: string;
 }

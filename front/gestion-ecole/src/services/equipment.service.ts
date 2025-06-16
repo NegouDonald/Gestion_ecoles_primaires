@@ -1,180 +1,123 @@
-import api from './api.service.js';
+import api from './api.service';
+import type { Equipment } from '../types/equipment.types';
 
-export interface Equipment {
-  id?: string;
-  name: string;
-  serialNumber: string;
-  category: string;
-  location: string;
-  status: string;
-  assignedTo?: string;
-  [key: string]: any;
-}
-
-export interface EquipmentFilters {
-  serialNumber?: string;
-  category?: string;
-  location?: string;
-  status?: string;
-  assignedTo?: string;
-  [key: string]: any;
-}
-
-const equipmentService = {
-  // CRUD de base
-  async createEquipment(equipmentData: Equipment): Promise<Equipment> {
-    try {
-      const response = await api.post('/equipment', equipmentData);
-      return response.data;
-    } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message || 'Erreur lors de la création du matériel'
-      );
-    }
-  },
-
-  async getAllEquipment(): Promise<Equipment[]> {
+export const equipmentService = {
+  getAllEquipment: async (): Promise<Equipment[]> => {
     try {
       const response = await api.get('/equipment');
       return response.data;
     } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message || 'Erreur lors de la récupération du matériel'
-      );
+      const message = error.response?.data?.message || 'Échec de la récupération des équipements';
+      throw new Error(message);
     }
   },
 
-  async getEquipmentById(id: string): Promise<Equipment> {
+  getEquipmentById: async (id: number): Promise<Equipment> => {
     try {
       const response = await api.get(`/equipment/${id}`);
       return response.data;
     } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message || 'Erreur lors de la récupération du matériel'
-      );
+      const message = error.response?.data?.message || 'Échec de la récupération de l\'équipement';
+      throw new Error(message);
     }
   },
 
-  async updateEquipment(id: string, equipmentData: Partial<Equipment>): Promise<Equipment> {
+  getEquipmentBySerialNumber: async (serialNumber: string): Promise<Equipment> => {
     try {
-      const response = await api.put(`/equipment/${id}`, equipmentData);
+      const response = await api.get(`/equipment/serial/${serialNumber}`);
       return response.data;
     } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message || 'Erreur lors de la mise à jour du matériel'
-      );
+      const message = error.response?.data?.message || 'Échec de la récupération par numéro de série';
+      throw new Error(message);
     }
   },
 
-  async deleteEquipment(id: string): Promise<{ success: boolean }> {
+  getEquipmentByCategory: async (category: string): Promise<Equipment[]> => {
     try {
-      await api.delete(`/equipment/${id}`);
-      return { success: true };
-    } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message || 'Erreur lors de la suppression du matériel'
-      );
-    }
-  },
-
-  // Recherche par critères
-  async getEquipmentBySerial(serialNumber: string): Promise<Equipment[]> {
-    try {
-      const response = await api.get(`/equipment/serial/${encodeURIComponent(serialNumber)}`);
+      const response = await api.get(`/equipment/category/${category}`);
       return response.data;
     } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message || 'Erreur lors de la recherche par numéro de série'
-      );
+      const message = error.response?.data?.message || 'Échec de la récupération par catégorie';
+      throw new Error(message);
     }
   },
 
-  async getEquipmentByCategory(category: string): Promise<Equipment[]> {
+  getEquipmentByLocation: async (location: string): Promise<Equipment[]> => {
     try {
-      const response = await api.get(`/equipment/category/${encodeURIComponent(category)}`);
+      const response = await api.get(`/equipment/location/${location}`);
       return response.data;
     } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message || 'Erreur lors de la recherche par catégorie'
-      );
+      const message = error.response?.data?.message || 'Échec de la récupération par emplacement';
+      throw new Error(message);
     }
   },
 
-  async getEquipmentByLocation(location: string): Promise<Equipment[]> {
+  getEquipmentByStatus: async (status: string): Promise<Equipment[]> => {
     try {
-      const response = await api.get(`/equipment/location/${encodeURIComponent(location)}`);
+      const response = await api.get(`/equipment/status/${status}`);
       return response.data;
     } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message || 'Erreur lors de la recherche par emplacement'
-      );
+      const message = error.response?.data?.message || 'Échec de la récupération par état';
+      throw new Error(message);
     }
   },
 
-  async getEquipmentByStatus(status: string): Promise<Equipment[]> {
+  getEquipmentByAssignedTo: async (assignedTo: string): Promise<Equipment[]> => {
     try {
-      const response = await api.get(`/equipment/status/${encodeURIComponent(status)}`);
+      const response = await api.get(`/equipment/assigned-to/${assignedTo}`);
       return response.data;
     } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message || 'Erreur lors de la recherche par statut'
-      );
+      const message = error.response?.data?.message || 'Échec de la récupération par assignation';
+      throw new Error(message);
     }
   },
 
-  async getEquipmentByAssignedTo(assignedTo: string): Promise<Equipment[]> {
-    try {
-      const response = await api.get(`/equipment/assigned-to/${encodeURIComponent(assignedTo)}`);
-      return response.data;
-    } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message || 'Erreur lors de la recherche par assignation'
-      );
-    }
-  },
-
-  // Maintenance et garantie
-  async getEquipmentMaintenanceDue(): Promise<Equipment[]> {
+  getEquipmentNeedingMaintenance: async (): Promise<Equipment[]> => {
     try {
       const response = await api.get('/equipment/maintenance-due');
       return response.data;
     } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message || 'Erreur lors de la récupération du matériel à maintenir'
-      );
+      const message = error.response?.data?.message || 'Échec de la récupération des équipements à maintenir';
+      throw new Error(message);
     }
   },
 
-  async getEquipmentUnderWarranty(): Promise<Equipment[]> {
+  getEquipmentUnderWarranty: async (): Promise<Equipment[]> => {
     try {
       const response = await api.get('/equipment/under-warranty');
       return response.data;
     } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message || 'Erreur lors de la récupération du matériel sous garantie'
-      );
+      const message = error.response?.data?.message || 'Échec de la récupération des équipements sous garantie';
+      throw new Error(message);
     }
   },
 
-  // Utilitaires pour filtres multiples
-  async searchEquipment(filters: EquipmentFilters = {}): Promise<Equipment[]> {
+  createEquipment: async (equipment: Partial<Equipment>): Promise<Equipment> => {
     try {
-      const params = new URLSearchParams();
-
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== null && value !== undefined && value !== '') {
-          params.append(key, String(value));
-        }
-      });
-
-      const response = await api.get(`/equipment?${params.toString()}`);
+      const response = await api.post('/equipment', equipment);
       return response.data;
     } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message || 'Erreur lors de la recherche de matériel'
-      );
+      const message = error.response?.data?.message || 'Échec de la création de l\'équipement';
+      throw new Error(message);
     }
-  }
-};
+  },
 
-export default equipmentService;
+  updateEquipment: async (id: number, equipment: Partial<Equipment>): Promise<Equipment> => {
+    try {
+      const response = await api.put(`/equipment/${id}`, equipment);
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Échec de la mise à jour de l\'équipement';
+      throw new Error(message);
+    }
+  },
+
+  deleteEquipment: async (id: number): Promise<void> => {
+    try {
+      await api.delete(`/equipment/${id}`);
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Échec de la suppression de l\'équipement';
+      throw new Error(message);
+    }
+  },
+};

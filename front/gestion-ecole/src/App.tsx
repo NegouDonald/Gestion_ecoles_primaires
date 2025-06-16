@@ -18,6 +18,10 @@ import ClassList from './pages/classes/ClassList';
 import ClassCreate from './pages/classes/ClassCreate';
 import ClassDetail from './pages/classes/ClassDetail';
 import ClassEdit from './pages/classes/ClassEdit';
+import EquipmentList from './pages/equipment/EquipmentList';
+import EquipmentCreate from './pages/equipment/EquipmentCreate';
+import EquipmentDetail from './pages/equipment/EquipmentDetail';
+import EquipmentEdit from './pages/equipment/EquipmentEdit';
 
 // import MainLayout from './components/MainLayout';
 import Dashboard from './pages/Dashboard';
@@ -50,6 +54,10 @@ const App: React.FC = () => {
           <Route path="/dashboard/classes/create" element={<ClassCreate />} />
           <Route path="/dashboard/classes/:id" element={<ClassDetail />} />
           <Route path="/dashboard/classes/edit/:id" element={<ClassEdit />} />
+          <Route path="/dashboard/equipment" element={<EquipmentList />} />
+          <Route path="/dashboard/equipment/create" element={<EquipmentCreate />} />
+          <Route path="/dashboard/equipment/:id" element={<EquipmentDetail />} />
+          <Route path="/dashboard/equipment/edit/:id" element={<EquipmentEdit />} />
         </Route>
         <Route >
            {/* element={<MainLayout />}> */}

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { equipmentService } from '../../services/equipment.service';
-import { Container, Typography, Box, Button, Grid, TextField, MenuItem, Alert, Paper } from '@mui/material';
+import { Container, Typography, Box, Button, Grid, TextField, MenuItem, CircularProgress, Alert, Paper } from '@mui/material';
 
 interface Equipment {
+  id: number;
   name: string;
   description?: string;
   serialNumber: string;
@@ -25,14 +26,50 @@ const statusOptions = [
   { value: 'En réparation', label: 'En réparation' },
 ];
 
-const EquipmentCreate: React.FC = () => {
+const EquipmentEdit: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [equipment, setEquipment] = useState<Equipment | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<Equipment>>({
     name: '',
     serialNumber: '',
     status: 'Bon état',
   });
+
+  useEffect(() => {
+    const fetchEquipment = async () => {
+      try {
+        if (id) {
+          const data = await equipmentService.getEquipmentById(Number(id));
+          console.log('Équipement reçu:', data);
+          setEquipment(data);
+          setFormData({
+            name: data.name,
+            description: data.description || '',
+            serialNumber: data.serialNumber,
+            category: data.category || '',
+            brand: data.brand || '',
+            model: data.model || '',
+            purchasePrice: data.purchasePrice,
+            purchaseDate: data.purchaseDate || '',
+            warrantyExpiryDate: data.warrantyExpiryDate || '',
+            maintenanceDate: data.maintenanceDate || '',
+            status: data.status,
+            location: data.location || '',
+            assignedTo: data.assignedTo || '',
+          });
+        }
+      } catch (err: any) {
+        setError(err.message || 'Erreur lors du chargement des détails de l\'équipement.');
+        console.error('Erreur:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEquipment();
+  }, [id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -45,26 +82,44 @@ const EquipmentCreate: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await equipmentService.createEquipment(formData);
-      console.log('Équipement créé, redirection vers: /dashboard/equipment');
-      navigate('/dashboard/equipment');
+      if (id) {
+        await equipmentService.updateEquipment(Number(id), formData);
+        console.log('Équipement mis à jour, redirection vers: /dashboard/equipment');
+        navigate('/dashboard/equipment');
+      }
     } catch (err: any) {
-      setError(err.message || 'Erreur lors de la création de l\'équipement.');
+      setError(err.message || 'Erreur lors de la mise à jour de l\'équipement.');
       console.error('Erreur:', err);
     }
   };
 
+  if (loading) {
+    return (
+      <Container sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
+
+  if (error || !equipment) {
+    return (
+      <Container>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error || 'Équipement non trouvé.'}
+        </Alert>
+        <Button variant="contained" onClick={() => navigate('/dashboard/equipment')}>
+          Retour à la liste
+        </Button>
+      </Container>
+    );
+  }
+
   return (
     <Container>
       <Typography variant="h4" gutterBottom>
-        Ajouter un Équipement
+        Modifier l'Équipement
       </Typography>
       <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
@@ -207,7 +262,7 @@ const EquipmentCreate: React.FC = () => {
           </Grid>
           <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
             <Button variant="contained" type="submit">
-              Créer
+              Enregistrer
             </Button>
             <Button variant="contained" color="inherit" onClick={() => navigate('/dashboard/equipment')}>
               Annuler
@@ -219,4 +274,4 @@ const EquipmentCreate: React.FC = () => {
   );
 };
 
-export default EquipmentCreate;
+export default EquipmentEdit;
