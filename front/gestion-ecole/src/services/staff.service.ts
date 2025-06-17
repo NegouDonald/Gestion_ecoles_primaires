@@ -1,196 +1,110 @@
 import api from './api.service';
-
-const BASE_URL = '/staff';
-
-// Types génériques (à adapter selon vos modèles réels)
-export interface Staff {
-  id: number | string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  [key: string]: any;
-}
-
-export interface AttendanceData {
-  date: string;
-  status: string;
-  [key: string]: any;
-}
-
-export interface LeaveData {
-  startDate: string;
-  endDate: string;
-  reason: string;
-  [key: string]: any;
-}
-
-export interface StaffFilters {
-  [key: string]: any;
-}
+import type { Staff } from '../types/staff.types';
+import type { Pageable } from '../types/api.types';
 
 export const staffService = {
-  create: async (staffData: Partial<Staff>): Promise<Staff> => {
-    const response = await api.post(BASE_URL, staffData);
-    return response.data;
+  createStaff: async (staff: Partial<Staff>): Promise<Staff> => {
+    try {
+      const response = await api.post('/staff', staff);
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Échec de la création du personnel';
+      throw new Error(message);
+    }
   },
 
-  getAll: async (): Promise<Staff[]> => {
-    const response = await api.get(BASE_URL);
-    return response.data;
+  getAllStaff: async (): Promise<Staff[]> => {
+    try {
+      const response = await api.get('/staff');
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Échec de la récupération du personnel';
+      throw new Error(message);
+    }
   },
 
-  getAllPaginated: async (
-    page = 0,
-    size = 10,
-    sort = 'lastName,asc'
-  ): Promise<{ content: Staff[]; totalElements: number; totalPages: number; }> => {
-    const response = await api.get(`${BASE_URL}/paginated`, {
-      params: { page, size, sort }
-    });
-    return response.data;
+  getStaffById: async (id: number): Promise<Staff> => {
+    try {
+      const response = await api.get(`/staff/${id}`);
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Échec de la récupération du personnel';
+      throw new Error(message);
+    }
   },
 
-  getById: async (id: number | string): Promise<Staff> => {
-    const response = await api.get(`${BASE_URL}/${id}`);
-    return response.data;
+  getStaffByDepartment: async (department: string): Promise<Staff[]> => {
+    try {
+      const response = await api.get(`/staff/department/${department}`);
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Échec de la récupération par département';
+      throw new Error(message);
+    }
   },
 
-  update: async (id: number | string, staffData: Partial<Staff>): Promise<Staff> => {
-    const response = await api.put(`${BASE_URL}/${id}`, staffData);
-    return response.data;
+  getStaffByPosition: async (position: string): Promise<Staff[]> => {
+    try {
+      const response = await api.get(`/staff/position/${position}`);
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Échec de la récupération par poste';
+      throw new Error(message);
+    }
   },
 
-  delete: async (id: number | string): Promise<{ message: string }> => {
-    await api.delete(`${BASE_URL}/${id}`);
-    return { message: 'Membre du personnel supprimé avec succès' };
+  getStaffByRole: async (role: string): Promise<Staff[]> => {
+    try {
+      const response = await api.get(`/staff/role/${role}`);
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Échec de la récupération par rôle';
+      throw new Error(message);
+    }
   },
 
-  getByDepartment: async (department: string): Promise<Staff[]> => {
-    const response = await api.get(`${BASE_URL}/department/${department}`);
-    return response.data;
+  getStaffByEmail: async (email: string): Promise<Staff> => {
+    try {
+      const response = await api.get(`/staff/email/${email}`);
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Échec de la récupération par email';
+      throw new Error(message);
+    }
   },
 
-  getByPosition: async (position: string): Promise<Staff[]> => {
-    const response = await api.get(`${BASE_URL}/position/${position}`);
-    return response.data;
+  getStaffBySearch: async (search: string, pageable: Pageable): Promise<{ content: Staff[], totalPages: number, totalElements: number }> => {
+    try {
+      const response = await api.get('/staff/search', {
+        params: { search, page: pageable.page, size: pageable.size, sort: pageable.sort },
+      });
+      return {
+        content: response.data.content,
+        totalPages: response.data.totalPages,
+        totalElements: response.data.totalElements,
+      };
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Échec de la recherche du personnel';
+      throw new Error(message);
+    }
   },
 
-  getByRole: async (role: string): Promise<Staff[]> => {
-    const response = await api.get(`${BASE_URL}/role/${role}`);
-    return response.data;
+  updateStaff: async (id: number, staff: Partial<Staff>): Promise<Staff> => {
+    try {
+      const response = await api.put(`/staff/${id}`, staff);
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Échec de la mise à jour du personnel';
+      throw new Error(message);
+    }
   },
 
-  getByEmail: async (email: string): Promise<Staff> => {
-    const response = await api.get(`${BASE_URL}/email/${email}`);
-    return response.data;
+  deleteStaff: async (id: number): Promise<void> => {
+    try {
+      await api.delete(`/staff/${id}`);
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Échec de la suppression du personnel';
+      throw new Error(message);
+    }
   },
-
-  search: async (
-    query: string,
-    page = 0,
-    size = 10
-  ): Promise<{ content: Staff[]; totalElements: number; totalPages: number; }> => {
-    const response = await api.get(`${BASE_URL}/search`, {
-      params: { query, page, size }
-    });
-    return response.data;
-  },
-
-  getStats: async (): Promise<any> => {
-    const response = await api.get(`${BASE_URL}/stats`);
-    return response.data;
-  },
-
-  getActive: async (): Promise<Staff[]> => {
-    const response = await api.get(`${BASE_URL}/active`);
-    return response.data;
-  },
-
-  getInactive: async (): Promise<Staff[]> => {
-    const response = await api.get(`${BASE_URL}/inactive`);
-    return response.data;
-  },
-
-  activate: async (id: number | string): Promise<Staff> => {
-    const response = await api.put(`${BASE_URL}/${id}/activate`);
-    return response.data;
-  },
-
-  deactivate: async (id: number | string): Promise<Staff> => {
-    const response = await api.put(`${BASE_URL}/${id}/deactivate`);
-    return response.data;
-  },
-
-  getAttendanceHistory: async (
-    id: number | string,
-    startDate: string,
-    endDate: string
-  ): Promise<any[]> => {
-    const response = await api.get(`${BASE_URL}/${id}/attendance`, {
-      params: { startDate, endDate }
-    });
-    return response.data;
-  },
-
-  recordAttendance: async (
-    id: number | string,
-    attendanceData: AttendanceData
-  ): Promise<any> => {
-    const response = await api.post(`${BASE_URL}/${id}/attendance`, attendanceData);
-    return response.data;
-  },
-
-  getLeaves: async (
-    id: number | string,
-    year?: number
-  ): Promise<any[]> => {
-    const response = await api.get(`${BASE_URL}/${id}/leaves`, {
-      params: year ? { year } : undefined
-    });
-    return response.data;
-  },
-
-  requestLeave: async (
-    id: number | string,
-    leaveData: LeaveData
-  ): Promise<any> => {
-    const response = await api.post(`${BASE_URL}/${id}/leaves`, leaveData);
-    return response.data;
-  },
-
-  approveLeave: async (
-    id: number | string,
-    leaveId: number | string,
-    approved: boolean,
-    comments = ''
-  ): Promise<any> => {
-    const response = await api.put(`${BASE_URL}/${id}/leaves/${leaveId}`, {
-      approved,
-      comments
-    });
-    return response.data;
-  },
-
-  getOrganizationChart: async (): Promise<any> => {
-    const response = await api.get(`${BASE_URL}/organization-chart`);
-    return response.data;
-  },
-
-  exportToPdf: async (filters: StaffFilters = {}): Promise<Blob> => {
-    const response = await api.get(`${BASE_URL}/export/pdf`, {
-      params: filters,
-      responseType: 'blob'
-    });
-    return response.data;
-  },
-
-  exportToExcel: async (filters: StaffFilters = {}): Promise<Blob> => {
-    const response = await api.get(`${BASE_URL}/export/excel`, {
-      params: filters,
-      responseType: 'blob'
-    });
-    return response.data;
-  }
 };
-
-export default staffService;

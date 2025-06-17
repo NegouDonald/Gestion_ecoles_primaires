@@ -12,3 +12,9 @@ export interface PaginatedResponse<T> {
   size: number;
   number: number;
 }
+
+export interface Pageable {
+  page: number;
+  size: number;
+  sort?: string;
+}

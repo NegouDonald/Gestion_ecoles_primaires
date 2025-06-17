@@ -1,4 +1,3 @@
-// entity/Staff.java
 package com.school.management.entity;
 
 import com.school.management.entity.enums.Gender;
@@ -45,7 +44,7 @@ public class Staff {
     private String department;
     private BigDecimal salary;
 
-    @OneToOne
+    @OneToOne(optional = true)
     @JoinColumn(name = "user_id")
     private User user;
 }

@@ -56,6 +56,13 @@ public class GradeService {
     }
 
     @Transactional(readOnly = true)
+    public List<GradeResponse> getAllGrades() {
+        return gradeRepository.findAll().stream()
+                .map(gradeMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public GradeResponse getGradeById(Long id) {
         Grade grade = gradeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Note non trouvée"));

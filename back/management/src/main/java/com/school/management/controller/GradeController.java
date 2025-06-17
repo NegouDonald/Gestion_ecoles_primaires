@@ -21,6 +21,12 @@ public class GradeController {
     @Autowired
     private GradeService gradeService;
 
+    @GetMapping
+    public ResponseEntity<List<GradeResponse>> getAllGrades() {
+        List<GradeResponse> grades = gradeService.getAllGrades();
+        return ResponseEntity.ok(grades);
+    }
+
     @PostMapping
     public ResponseEntity<GradeResponse> createGrade(@Valid @RequestBody GradeCreateRequest request) {
         GradeResponse response = gradeService.createGrade(request);

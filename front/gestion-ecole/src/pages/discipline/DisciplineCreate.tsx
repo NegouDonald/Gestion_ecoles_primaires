@@ -1,150 +1,234 @@
-// import React, { useState } from 'react';
-// import { useNavigate } from 'react-router-dom';
-// import type { DisciplineCreateRequest } from '../../types/discipline.types';
-// import { createDiscipline } from '../../services/discipline.service';
-// import { useToast } from '../../hooks/useToast';
-// import { Button } from '../../components/common/Button';
-// import { Input } from '../../components/common/Input';
-// import { Select } from '../../components/common/Select';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Container,
+  Typography,
+  Box,
+  Button,
+  Grid,
+  TextField,
+  CircularProgress,
+  Alert,
+  Paper,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+} from '@mui/material';
+import type { SelectChangeEvent } from '@mui/material/Select';
+import { disciplineService } from '../../services/discipline.service';
+import { studentService } from '../../services/student.service';
+import type { DisciplineCreateRequest, DisciplineType } from '../../types/discipline.types';
+import { DisciplineTypeDisplayNames } from '../../types/discipline.types'; // Importer comme valeur
 
-// const DisciplineCreate: React.FC = () => {
-//   const [formData, setFormData] = useState<DisciplineCreateRequest>({
-//     studentId: 0,
-//     type: 'BLAME',
-//     incidentDate: new Date().toISOString().split('T')[0],
-//     description: '',
-//     action: '',
-//     reportedBy: '',
-//     resolved: false,
-//   });
-//   const [errors, setErrors] = useState<Partial<Record<keyof DisciplineCreateRequest, string>>>({});
-//   const navigate = useNavigate();
-//   const { showToast } = useToast();
+// Interface minimale pour les étudiants (basée sur Student.java)
+interface Student {
+  id: number;
+  firstName: string;
+  lastName: string;
+}
 
-//   const validateForm = (): boolean => {
-//     const newErrors: Partial<Record<keyof DisciplineCreateRequest, string>> = {};
-//     if (formData.studentId <= 0) {
-//       newErrors.studentId = "L'ID de l'étudiant doit être un nombre positif";
-//     }
-//     if (!formData.type) {
-//       newErrors.type = 'Le type est requis';
-//     }
-//     if (!formData.incidentDate) {
-//       newErrors.incidentDate = 'La date est requise';
-//     }
-//     if (!formData.description.trim()) {
-//       newErrors.description = 'La description est requise';
-//     }
-//     setErrors(newErrors);
-//     return Object.keys(newErrors).length === 0;
-//   };
+const DisciplineCreate: React.FC = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState<DisciplineCreateRequest>({
+    studentId: 0,
+    type: 'BLAME',
+    incidentDate: new Date().toISOString().split('T')[0], // Date du jour
+    description: '',
+    action: '',
+    reportedBy: '',
+    resolved: false,
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState(true);
 
-//   const handleInputChange = (name: keyof DisciplineCreateRequest) => (value: string) => {
-//     setFormData((prev) => ({ ...prev, [name]: value }));
-//     setErrors((prev) => ({ ...prev, [name]: undefined }));
-//   };
+  // Charger les étudiants au montage du composant
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const response = await studentService.getAllStudents();
+        setStudents(response);
+      } catch (error: any) {
+        setSubmitError(error.message || 'Erreur lors du chargement des étudiants.');
+      } finally {
+        setLoadingStudents(false);
+      }
+    };
+    fetchStudents();
+  }, []);
 
-//   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     setFormData((prev) => ({ ...prev, resolved: e.target.checked }));
-//   };
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string | number>,
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name as keyof DisciplineCreateRequest]: value,
+    }));
+  };
 
-//   const handleSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     if (!validateForm()) {
-//       showToast('Veuillez corriger les erreurs dans le formulaire', 'error');
-//       return;
-//     }
-//     try {
-//       await createDiscipline(formData);
-//       showToast('Incident créé avec succès', 'success');
-//       navigate('/disciplines');
-//     } catch (error) {
-//       showToast('Erreur lors de la création', 'error');
-//     }
-//   };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setSubmitError(null);
 
-//   return (
-//     <div className="p-6 max-w-lg mx-auto">
-//       <h1 className="text-2xl font-bold mb-6">Nouvel Incident Disciplinaire</h1>
-//       <form onSubmit={handleSubmit} className="space-y-6">
-//         <Input
-//           label="ID de l'étudiant"
-//           type="number"
-//           value={formData.studentId.toString()}
-//           onChange={handleInputChange('studentId')}
-//           placeholder="Entrez l'ID de l'étudiant"
-//           required
-//           error={errors.studentId}
-//         />
-//         <Select
-//           label="Type d'incident"
-//           value={formData.type}
-//           onChange={handleInputChange('type')}
-//           options={[
-//             { value: 'BLAME', label: 'Blâme' },
-//             { value: 'CONVOCATION', label: 'Convocation' },
-//           ]}
-//           placeholder="Sélectionnez un type"
-//           required
-//           error={errors.type}
-//         />
-//         <Input
-//           label="Date de l'incident"
-//           type="date"
-//           value={formData.incidentDate}
-//           onChange={handleInputChange('incidentDate')}
-//           required
-//           error={errors.incidentDate}
-//         />
-//         <Input
-//           label="Description"
-//           type="text"
-//           value={formData.description}
-//           onChange={handleInputChange('description')}
-//           placeholder="Décrivez l'incident"
-//           required
-//           error={errors.description}
-//         />
-//         <Input
-//           label="Action prise"
-//           type="text"
-//           value={formData.action ?? ""}
-//           onChange={handleInputChange('action')}
-//           placeholder="Action prise (optionnel)"
-//         />
-//         <Input
-//           label="Signalé par"
-//           type="text"
-//           value={formData.reportedBy ?? ""}
-//           onChange={handleInputChange('reportedBy')}
-//           placeholder="Nom de la personne qui a signalé"
-//         />
-//         <div className="flex items-center space-x-2">
-//           <input
-//             type="checkbox"
-//             name="resolved"
-//             checked={formData.resolved}
-//             onChange={handleCheckboxChange}
-//             className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-//           />
-//           <label className="text-sm font-medium text-gray-700">Résolu</label>
-//         </div>
-//         <div className="flex space-x-3">
-//           <Button type="submit" variant="primary" className="flex-1">
-//             Créer
-//           </Button>
-//           <Button
-//             type="button"
-//             variant="secondary"
-//             onClick={() => navigate('/disciplines')}
-//             className="flex-1"
-//           >
-//             Annuler
-//           </Button>
-//         </div>
-//       </form>
-//     </div>
-//   );
-// };
+    try {
+      // Validation des champs requis
+      if (!formData.studentId || formData.studentId === 0) {
+        throw new Error('Veuillez sélectionner un étudiant.');
+      }
+      if (!formData.type) {
+        throw new Error('Veuillez sélectionner un type de mesure disciplinaire.');
+      }
+      if (!formData.incidentDate) {
+        throw new Error('Veuillez spécifier la date de l’incident.');
+      }
+      if (!formData.description.trim()) {
+        throw new Error('Veuillez fournir une description.');
+      }
 
-// export default DisciplineCreate;
+      await disciplineService.createDiscipline(formData);
+      navigate('/dashboard/disciplines');
+    } catch (e: any) {
+      setSubmitError(e.message || 'Erreur lors de la création de la mesure disciplinaire.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Container>
+      <Typography variant="h4" gutterBottom>
+        Créer une Mesure Disciplinaire
+      </Typography>
+      <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
+        {loadingStudents ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <form onSubmit={handleSubmit} noValidate>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required disabled={submitting || students.length === 0}>
+                  <InputLabel id="student-label">Étudiant</InputLabel>
+                  <Select
+                    labelId="student-label"
+                    name="studentId"
+                    value={formData.studentId}
+                    onChange={handleChange}
+                    label="Étudiant"
+                  >
+                    <MenuItem value={0} disabled>
+                      Sélectionner un étudiant
+                    </MenuItem>
+                    {students.map((student) => (
+                      <MenuItem key={student.id} value={student.id}>
+                        {student.firstName} {student.lastName}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required disabled={submitting}>
+                  <InputLabel id="type-label">Type de mesure</InputLabel>
+                  <Select
+                    labelId="type-label"
+                    name="type"
+                    value={formData.type}
+                    onChange={handleChange}
+                    label="Type de mesure"
+                  >
+                    {Object.entries(DisciplineTypeDisplayNames).map(([key, value]) => (
+                      <MenuItem key={key} value={key}>
+                        {value}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Date de l'incident"
+                  name="incidentDate"
+                  type="date"
+                  value={formData.incidentDate}
+                  onChange={handleChange}
+                  required
+                  fullWidth
+                  disabled={submitting}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Signalé par"
+                  name="reportedBy"
+                  value={formData.reportedBy}
+                  onChange={handleChange}
+                  fullWidth
+                  disabled={submitting}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  label="Description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  multiline
+                  rows={4}
+                  required
+                  fullWidth
+                  disabled={submitting}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  label="Action prise"
+                  name="’action"
+                  value={formData.action}
+                  onChange={handleChange}
+                  multiline
+                  rows={2}
+                  fullWidth
+                  disabled={submitting}
+                />
+              </Grid>
+            </Grid>
+
+            {submitError && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {submitError}
+              </Alert>
+            )}
+
+            <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
+              <Button variant="contained" type="submit" disabled={submitting || loadingStudents}>
+                {submitting ? <CircularProgress size={24} /> : 'Créer'}
+              </Button>
+              <Button
+                variant="contained"
+                color="inherit"
+                onClick={() => navigate('/dashboard/disciplines')}
+                disabled={submitting || loadingStudents}
+              >
+                Annuler
+              </Button>
+            </Box>
+          </form>
+        )}
+      </Paper>
+    </Container>
+  );
+};
+
+export default DisciplineCreate;

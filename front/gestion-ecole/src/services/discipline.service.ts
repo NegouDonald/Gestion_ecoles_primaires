@@ -1,45 +1,76 @@
-import axios from 'axios';
-import type { Discipline, DisciplineCreateRequest } from '../types/discipline.types';
+import api from './api.service';
+import type { Discipline, DisciplineCreateRequest, DisciplineResponse } from '../types/discipline.types';
+import type { Pageable, PaginatedResponse } from '../types/api.types';
 
-const API_URL = '/api/disciplines';
+export const disciplineService = {
+  createDiscipline: async (discipline: DisciplineCreateRequest): Promise<DisciplineResponse> => {
+    try {
+      const response = await api.post<DisciplineResponse>('/disciplines', discipline);
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Échec de la création de la mesure disciplinaire';
+      throw new Error(message);
+    }
+  },
 
-export const getDisciplines = async (params: { page?: number; size?: number; search?: string }) => {
-  const response = await axios.get(API_URL, { params });
-  return response.data;
-};
+  getAllDisciplines: async (pageable: Pageable): Promise<PaginatedResponse<DisciplineResponse>> => {
+    try {
+      const response = await api.get<PaginatedResponse<DisciplineResponse>>('/disciplines', {
+        params: { page: pageable.page, size: pageable.size, sort: pageable.sort },
+      });
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Échec de la récupération des mesures disciplinaires';
+      throw new Error(message);
+    }
+  },
 
-export const getDisciplineById = async (id: number): Promise<Discipline> => {
-  const response = await axios.get(`${API_URL}/${id}`);
-  return response.data;
-};
+  getDisciplineById: async (id: number): Promise<DisciplineResponse> => {
+    try {
+      const response = await api.get<DisciplineResponse>(`/disciplines/${id}`);
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Échec de la récupération de la mesure disciplinaire';
+      throw new Error(message);
+    }
+  },
 
-export const createDiscipline = async (data: DisciplineCreateRequest) => {
-  const response = await axios.post(API_URL, data);
-  return response.data;
-};
+  getDisciplinesByStudent: async (studentId: number): Promise<DisciplineResponse[]> => {
+    try {
+      const response = await api.get<DisciplineResponse[]>(`/disciplines/student/${studentId}`);
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Échec de la récupération des mesures par étudiant';
+      throw new Error(message);
+    }
+  },
 
-export const updateDiscipline = async (id: number, data: DisciplineCreateRequest) => {
-  const response = await axios.put(`${API_URL}/${id}`, data);
-  return response.data;
-};
+  updateDiscipline: async (id: number, discipline: DisciplineCreateRequest): Promise<DisciplineResponse> => {
+    try {
+      const response = await api.put<DisciplineResponse>(`/disciplines/${id}`, discipline);
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Échec de la mise à jour de la mesure disciplinaire';
+      throw new Error(message);
+    }
+  },
 
-export const deleteDiscipline = async (id: number) => {
-  await axios.delete(`${API_URL}/${id}`);
-};
+  deleteDiscipline: async (id: number): Promise<void> => {
+    try {
+      await api.delete(`/disciplines/${id}`);
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Échec de la suppression de la mesure disciplinaire';
+      throw new Error(message);
+    }
+  },
 
-export const getDisciplinesByStudent = async (studentId: number) => {
-  const response = await axios.get(`${API_URL}/student/${studentId}`);
-  return response.data;
-};
-
-export const getDisciplinesByDateRange = async (startDate: string, endDate: string) => {
-  const response = await axios.get(`${API_URL}/date-range`, {
-    params: { startDate, endDate },
-  });
-  return response.data;
-};
-
-export const getRecentDisciplines = async (days: number) => {
-  const response = await axios.get(`${API_URL}/recent`, { params: { days } });
-  return response.data;
+  markAsResolved: async (id: number, action: string): Promise<DisciplineResponse> => {
+    try {
+      const response = await api.post<DisciplineResponse>(`/disciplines/${id}/resolve`, {}, { params: { action } });
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || 'Échec de la résolution de la mesure disciplinaire';
+      throw new Error(message);
+    }
+  },
 };

@@ -1,127 +1,264 @@
-// import React, { useState, useEffect } from 'react';
-// import { useParams, useNavigate } from 'react-router-dom';
- 
-// import { getDisciplineById, updateDiscipline } from '../../services/discipline.service';
-// import { useToast } from '../../hooks/useToast';
- 
- 
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { disciplineService } from '../../services/discipline.service';
+import {
+  Container,
+  Typography,
+  Box,
+  Button,
+  Grid,
+  TextField,
+  MenuItem,
+  CircularProgress,
+  Alert,
+  Paper,
+} from '@mui/material';
+import type { DisciplineResponse, DisciplineCreateRequest, DisciplineType } from '../../types/discipline.types';
+import { DisciplineTypeDisplayNames } from '../../types/discipline.types';
 
-// const DisciplineEdit: React.FC = () => {
-//   const { id } = useParams<{ id: string }>();
-//   const [formData, setFormData] = useState<DisciplineCreateRequest | null>(null);
-//   const navigate = useNavigate();
-//   const { showToast } = useToast();
+type FormData = {
+  studentId: number | '';
+  type: DisciplineType | '';
+  incidentDate: string;
+  description: string;
+  action: string;
+  reportedBy: string;
+  resolved: boolean;
+};
 
-//   useEffect(() => {
-//     const fetchDiscipline = async () => {
-//       try {
-//         const discipline = await getDisciplineById(Number(id));
-//         setFormData({
-//           studentId: discipline.studentId || 0,
-//           type: discipline.type,
-//           incidentDate: new Date(discipline.incidentDate).toISOString().split('T')[0],
-//           description: discipline.description,
-//           action: discipline.action || '',
-//           reportedBy: discipline.reportedBy || '',
-//           resolved: discipline.resolved,
-//         });
-//       } catch (error) {
-//         showToast('Erreur lors du chargement de l\'incident', 'error');
-//         navigate('/disciplines');
-//       }
-//     };
-//     fetchDiscipline();
-//   }, [id, navigate, showToast]);
+const DisciplineEdit: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
-//   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-//     const { name, value } = e.target;
-//     setFormData((prev) => prev ? { ...prev, [name]: value } : null);
-//   };
+  const [formData, setFormData] = useState<FormData>({
+    studentId: '',
+    type: '',
+    incidentDate: '',
+    description: '',
+    action: '',
+    reportedBy: '',
+    resolved: false,
+  });
 
-//   const handleSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     if (!formData) return;
-//     try {
-//       await updateDiscipline(Number(id), formData);
-//       showToast('Incident mis à jour avec succès', 'success');
-//       navigate(`/disciplines/${id}`);
-//     } catch (error) {
-//       showToast('Erreur lors de la mise à jour', 'error');
-//     }
-//   };
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState<boolean>(false);
 
-//   if (!formData) return <p>Chargement...</p>;
+  useEffect(() => {
+    if (!id) {
+      setError("Aucun ID fourni. Impossible de modifier une mesure disciplinaire sans identifiant.");
+      setLoading(false);
+      return;
+    }
 
-//   return (
-//     <div className="p-6 max-w-lg mx-auto">
-//       <h1 className="text-2xl font-bold mb-4">Modifier l'Incident Disciplinaire</h1>
-//       <form onSubmit={handleSubmit} className="space-y-4">
-//         <Input
-//           type="number"
-//           name="studentId"
-//           value={formData.studentId}
-//           onChange={handleChange}
-//           placeholder="ID de l'étudiant"
-//           required
-//         />
-//         <Select
-//           name="type"
-//           value={formData.type}
-//           onChange={handleChange}
-//           options={[
-//             { value: 'BLAME', label: 'Blâme' },
-//             { value: 'CONVOCATION', label: 'Convocation' },
-//           ]}
-//           required
-//         />
-//         <Input
-//           type="date"
-//           name="incidentDate"
-//           value={formData.incidentDate}
-//           onChange={handleChange}
-//           required
-//         />
-//         <Input
-//           type="text"
-//           name="description"
-//           value={formData.description}
-//           onChange={handleChange}
-//           placeholder="Description"
-//           required
-//         />
-//         <Input
-//           type="text"
-//           name="action"
-//           value={formData.action}
-//           onChange={handleChange}
-//           placeholder="Action prise (optionnel)"
-//         />
-//         <Input
-//           type="text"
-//           name="reportedBy"
-//           value={formData.reportedBy}
-//           onChange={handleChange}
-//           placeholder="Signalé par"
-//         />
-//         <div className="flex items-center">
-//           <input
-//             type="checkbox"
-//             name="resolved"
-//             checked={formData.resolved}
-//             onChange={(e) => setFormData({ ...formData, resolved: e.target.checked })}
-//             className="mr-2"
-//           />
-//           <label>Résolu</label>
-//         </div>
-//         <div className="flex space-x-2">
-//           <Button type="submit" variant="primary">Mettre à jour</Button>
-//           <Button type="button" variant="secondary" onClick={() => navigate('/disciplines')}>
-//             Annuler
-//           </Button>
-//         </div>
-//       </form>
-//     </div>
-//   );
-// };
+    const fetchDiscipline = async () => {
+      try {
+        const data = await disciplineService.getDisciplineById(Number(id));
+        if (!data) throw new Error('Mesure disciplinaire non trouvée');
 
-// export default DisciplineEdit;
+        setFormData({
+          studentId: data.studentId || '',
+          type: data.type || '',
+          incidentDate: data.incidentDate || '',
+          description: data.description || '',
+          action: data.action || '',
+          reportedBy: data.reportedBy || '',
+          resolved: data.resolved || false,
+        });
+      } catch (e: any) {
+        setError(e.message || 'Erreur lors du chargement de la mesure disciplinaire.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDiscipline();
+  }, [id]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === 'studentId' ? (value ? Number(value) : '') : value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      if (!formData.studentId || !formData.type || !formData.incidentDate || !formData.description) {
+        throw new Error('Merci de remplir tous les champs obligatoires.');
+      }
+
+      const disciplineData: DisciplineCreateRequest = {
+        studentId: Number(formData.studentId),
+        type: formData.type as DisciplineType,
+        incidentDate: formData.incidentDate,
+        description: formData.description,
+        action: formData.action || undefined,
+        reportedBy: formData.reportedBy || undefined,
+        resolved: formData.resolved,
+      };
+
+      await disciplineService.updateDiscipline(Number(id), disciplineData);
+      navigate('/dashboard/disciplines');
+    } catch (e: any) {
+      setSubmitError(e.message || 'Erreur lors de la mise à jour de la mesure disciplinaire.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Container sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+        <Button variant="contained" onClick={() => navigate('/dashboard/disciplines')}>
+          Retour à la liste
+        </Button>
+      </Container>
+    );
+  }
+
+  return (
+    <Container>
+      <Typography variant="h4" gutterBottom>
+        Modifier la Mesure Disciplinaire
+      </Typography>
+      <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
+        <form onSubmit={handleSubmit} noValidate>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="ID de l'Étudiant"
+                name="studentId"
+                type="number"
+                value={formData.studentId}
+                onChange={handleChange}
+                required
+                fullWidth
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                select
+                label="Type de Mesure"
+                name="type"
+                value={formData.type}
+                onChange={handleChange}
+                required
+                fullWidth
+              >
+                <MenuItem value="">Sélectionner un type</MenuItem>
+                {Object.entries(DisciplineTypeDisplayNames).map(([key, value]) => (
+                  <MenuItem key={key} value={key}>
+                    {value}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Date de l'Incident"
+                name="incidentDate"
+                type="date"
+                value={formData.incidentDate}
+                onChange={handleChange}
+                required
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                label="Description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                required
+                multiline
+                rows={4}
+                fullWidth
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                label="Action Prise"
+                name="action"
+                value={formData.action}
+                onChange={handleChange}
+                multiline
+                rows={4}
+                fullWidth
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Signalé par"
+                name="reportedBy"
+                value={formData.reportedBy}
+                onChange={handleChange}
+                fullWidth
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                select
+                label="Résolu"
+                name="resolved"
+                value={formData.resolved.toString()}
+                onChange={(e) => setFormData((prev) => ({ ...prev, resolved: e.target.value === 'true' }))}
+                fullWidth
+              >
+                <MenuItem value="true">Oui</MenuItem>
+                <MenuItem value="false">Non</MenuItem>
+              </TextField>
+            </Grid>
+          </Grid>
+
+          {submitError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {submitError}
+            </Alert>
+          )}
+
+          <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
+            <Button variant="contained" type="submit" disabled={submitting}>
+              {submitting ? 'Mise à jour...' : 'Enregistrer'}
+            </Button>
+            <Button
+              variant="contained"
+              color="inherit"
+              onClick={() => navigate('/dashboard/disciplines')}
+              disabled={submitting}
+            >
+              Annuler
+            </Button>
+          </Box>
+        </form>
+      </Paper>
+    </Container>
+  );
+};
+
+export default DisciplineEdit;

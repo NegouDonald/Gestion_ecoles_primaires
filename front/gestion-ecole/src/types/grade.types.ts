@@ -1,13 +1,28 @@
-// grade types 
 export interface Grade {
-    id: number;
-    name: string;
-    level: number;
-    description?: string;
-    createdAt?: string;
-    updatedAt?: string;
+  id: number;
+  studentId: number;
+  studentName: string;
+  subjectId: number;
+  subjectName: string;
+  score: number;
+  term: string;
+  academicYear: string;
+  examType: string;
+  gradeDate: string;
+  comments?: string;
 }
 
-export type CreateGradeDto = Omit<Grade, 'id' | 'createdAt' | 'updatedAt'>;
+export interface GradeCreateRequest {
+  studentId: number;
+  subjectId: number;
+  score: number;
+  term: string;
+  academicYear: string;
+  examType: string;
+  gradeDate: string;
+  comments?: string;
+}
 
-export type UpdateGradeDto = Partial<CreateGradeDto>;
+export interface GradeUpdateRequest extends Partial<GradeCreateRequest> {
+  id: number;
+}

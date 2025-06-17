@@ -2,6 +2,7 @@
 // entity/User.java
 package com.school.management.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.school.management.entity.enums.UserRole;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -58,9 +59,11 @@ public class User {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Teacher teacher;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Staff staff;
 
     @PrePersist
